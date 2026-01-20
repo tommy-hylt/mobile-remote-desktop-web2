@@ -51,3 +51,7 @@ These guidelines reflect the preferred coding style for this project and should 
 *   **Active Cleanup**: Always revert debug logging, temporary test code, and unused artifacts immediately after verifying a fix. The codebase should remain clean at all times.
 *   **Avoid Over-Engineering**: Do not use complex APIs (like `URLSearchParams`) when a simple string construction sufficies.
 *   **Minimal Abstraction**: Use the simplest possible solution that solves the problem.
+
+## 10. Concise Logic
+*   **Immutability**: Avoid `let` and mutation. Use `const` chains to transform data step-by-step (e.g., `filter` -> `sort` -> `slice`).
+*   **Functional Iteration**: Prefer `.map`, `.filter`, and other array methods over traditional `for` loops.

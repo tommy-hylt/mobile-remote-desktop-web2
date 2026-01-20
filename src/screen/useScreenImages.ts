@@ -32,9 +32,15 @@ export const useScreenImages = (viewport: ViewportState, screenSize: ScreenSize)
             const url = URL.createObjectURL(blob);
 
             setImages((prev) => {
-                const newImage: ScreenImage = { url, area: { x, y, w, h } };
-                const newImages = [...prev, newImage];
-                return newImages.length > 3 ? newImages.slice(newImages.length - 3) : newImages;
+                const newArea = { x, y, w, h };
+                const oldImages = prev.filter((img) => getCoverageRatio(img.area, newArea) < 1);
+
+                const sortedImages = [...oldImages].sort(
+                    (a, b) => getCoverageRatio(a.area, newArea) - getCoverageRatio(b.area, newArea));
+                const keptImages = oldImages.filter(c => sortedImages.indexOf(c) < 3 - 1);
+
+                const newImage = { url, area: newArea };
+                return [...keptImages, newImage];
             });
         } catch (error) {
             console.error(error);
@@ -47,4 +53,18 @@ export const useScreenImages = (viewport: ViewportState, screenSize: ScreenSize)
     }, [fetchCapture]);
 
     return { images, fetchCapture };
+};
+
+const getCoverageRatio = (subject: Rect, covering: Rect): number => {
+    const x = Math.max(subject.x, covering.x);
+    const y = Math.max(subject.y, covering.y);
+    const w = Math.min(subject.x + subject.w, covering.x + covering.w) - x;
+    const h = Math.min(subject.y + subject.h, covering.y + covering.h) - y;
+
+    if (w <= 0 || h <= 0) return 0;
+
+    const intersectionArea = w * h;
+    const subjectArea = subject.w * subject.h;
+
+    return subjectArea > 0 ? intersectionArea / subjectArea : 0;
 };

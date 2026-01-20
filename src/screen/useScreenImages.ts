@@ -6,10 +6,12 @@ import type { Rect } from './Rect';
 export interface ScreenImage {
     url: string;
     area: Rect;
+    hash: string | null;
 }
 
 export const useScreenImages = (viewport: ViewportState, screenSize: ScreenSize) => {
     const [images, setImages] = useState<ScreenImage[]>([]);
+    const [latestHash, setLatestHash] = useState<string | null>(null);
 
     const fetchCapture = useCallback(async () => {
         const visibleX = -viewport.u / viewport.scale;
@@ -25,11 +27,17 @@ export const useScreenImages = (viewport: ViewportState, screenSize: ScreenSize)
         if (w <= 0 || h <= 0) return;
 
         try {
-            const response = await fetch(`/capture?area=${x},${y},${w},${h}`);
-            if (!response.ok || response.status === 204) return;
+            const headers: HeadersInit = latestHash ? { 'Last-Hash': latestHash } : {};
+            const response = await fetch(`/capture?area=${x},${y},${w},${h}`, { headers });
 
+            if (response.status === 204) return;
+            if (!response.ok) return;
+
+            const nextHash = response.headers.get('Next-Hash');
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
+
+            setLatestHash(nextHash);
 
             setImages((prev) => {
                 const newArea = { x, y, w, h };
@@ -39,17 +47,17 @@ export const useScreenImages = (viewport: ViewportState, screenSize: ScreenSize)
                     (a, b) => getCoverageRatio(a.area, newArea) - getCoverageRatio(b.area, newArea));
                 const keptImages = oldImages.filter(c => sortedImages.indexOf(c) < 3 - 1);
 
-                const newImage = { url, area: newArea };
+                const newImage = { url, area: newArea, hash: nextHash };
                 return [...keptImages, newImage];
             });
         } catch (error) {
             console.error(error);
         }
-    }, [viewport, screenSize]);
+    }, [viewport, screenSize, latestHash]);
 
     useEffect(() => {
-        const timer = setTimeout(fetchCapture, 100);
-        return () => clearTimeout(timer);
+        const timer = setInterval(fetchCapture, 1000);
+        return () => clearInterval(timer);
     }, [fetchCapture]);
 
     return { images, fetchCapture };

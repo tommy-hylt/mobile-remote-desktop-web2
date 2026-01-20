@@ -1,4 +1,8 @@
-# Code Style Guidelines
+---
+trigger: always_on
+---
+
+# Code Style Guide
 
 These guidelines reflect the preferred coding style for this project and should be applied to future projects as well.
 
@@ -55,3 +59,4 @@ These guidelines reflect the preferred coding style for this project and should 
 ## 10. Concise Logic
 *   **Immutability**: Avoid `let` and mutation. Use `const` chains to transform data step-by-step (e.g., `filter` -> `sort` -> `slice`).
 *   **Functional Iteration**: Prefer `.map`, `.filter`, and other array methods over traditional `for` loops.
+*   **Nullish Coalescing**: Prefer `??` over `||` for default values to strictly handle `null`/`undefined` without suppressing falsy values (e.g. `0`, `""`).

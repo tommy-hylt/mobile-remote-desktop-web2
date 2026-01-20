@@ -25,8 +25,10 @@ These guidelines reflect the preferred coding style for this project and should 
 *   **Co-location**: Keep related types (`Point.ts`), constants, and sub-components within the feature folder they belong to.
 
 ## 5. Naming & Files
-*   **Meaningful Filenames**: Avoid generic filenames like `constants.ts` or `config.ts`. Use specific names that describe the content (e.g., `server.ts` for server configuration).
-*   **Function-File Match**: The name of the main exported function should match the filename (e.g., `useDebounce` inside `useDebounce.ts`).
+*   **Meaningful Filenames**: Avoid generic filenames like `constants.ts`, `config.ts`, or `types.ts`. Use specific names that describe the content (e.g., `server.ts` for server configuration, `Rect.ts` for Rect interface).
+*   **Function-File Match**: The name of the main exported function or type should match the filename (e.g., `useDebounce` inside `useDebounce.ts`, `ViewportState` inside `ViewportState.ts`).
+*   **Separate Type Files**: Define interfaces and types in their own separate files. Do not bundle them.
+*   **Co-location**: Place type files in the directory where they are primarily used.
 
 ## 6. CSS Files
 *   **Plain CSS**: Plain CSS file of the same name as the component (e.g., `Screen.css` for `Screen.tsx`).
@@ -44,3 +46,8 @@ These guidelines reflect the preferred coding style for this project and should 
 ## 8. Anonymous Functions
 *   **Avoid Named One-Off Functions**: Do not name functions that are only used once (e.g., inside `useEffect`). Use anonymous functions or defined callbacks directly.
 *   **Conciseness**: Prefer arrow functions and concise syntax.
+
+## 9. Simplicity & Cleanup
+*   **Active Cleanup**: Always revert debug logging, temporary test code, and unused artifacts immediately after verifying a fix. The codebase should remain clean at all times.
+*   **Avoid Over-Engineering**: Do not use complex APIs (like `URLSearchParams`) when a simple string construction sufficies.
+*   **Minimal Abstraction**: Use the simplest possible solution that solves the problem.

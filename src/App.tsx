@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import { Screen } from './screen/Screen';
-import type { Rect, ScreenSize } from './types';
+import type { ViewportState } from './screen/ViewportState';
+import type { ScreenSize } from './screen/ScreenSize';
 
 function App() {
   const [screenSize, setScreenSize] = useState<ScreenSize | null>(null);
-  const [area, setArea] = useState<Rect | null>(null);
+  const [viewport, setViewport] = useState<ViewportState | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -14,7 +15,15 @@ function App() {
         if (response.ok) {
           const size = await response.json();
           setScreenSize(size);
-          setArea({ x: 0, y: 0, w: size.width, h: size.height });
+          const scaleW = window.innerWidth / size.width;
+          const scaleH = window.innerHeight / size.height;
+          const scale = Math.min(scaleW, scaleH);
+
+          setViewport({
+            u: (window.innerWidth - size.width * scale) / 2,
+            v: (window.innerHeight - size.height * scale) / 2,
+            scale,
+          });
         }
       } catch (error) {
         console.error(error);
@@ -24,8 +33,8 @@ function App() {
 
   return (
     <div className="App">
-      {area && screenSize ? (
-        <Screen area={area} screenSize={screenSize} onAreaChange={setArea} />
+      {viewport && screenSize ? (
+        <Screen viewport={viewport} screenSize={screenSize} onViewportChange={setViewport} />
       ) : (
         <div className="loading">Connecting to remote desktop...</div>
       )}

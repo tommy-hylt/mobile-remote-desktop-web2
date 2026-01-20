@@ -4,8 +4,3 @@ export interface Rect {
     w: number;
     h: number;
 }
-
-export interface ScreenSize {
-    width: number;
-    height: number;
-}

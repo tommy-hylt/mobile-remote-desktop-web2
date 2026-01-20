@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
+    allowedHosts: ['heyahyperw2'],
     proxy: {
       '/capture': {
         target: 'http://localhost:6485',

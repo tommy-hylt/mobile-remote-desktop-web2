@@ -1,20 +1,21 @@
 import { useRef } from 'react';
-import type { Rect, ScreenSize } from '../types';
+import type { ScreenSize } from './ScreenSize';
+import type { ViewportState } from './ViewportState';
 import { useScreenImages } from './useScreenImages';
 import { useTouchZoom } from './useTouchZoom';
 import './Screen.css';
 
 interface ScreenProps {
-  area: Rect;
+  viewport: ViewportState;
   screenSize: ScreenSize;
-  onAreaChange: (area: Rect) => void;
+  onViewportChange: (viewport: ViewportState) => void;
 }
 
-export const Screen = ({ area, screenSize, onAreaChange }: ScreenProps) => {
+export const Screen = ({ viewport, screenSize, onViewportChange }: ScreenProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { images, fetchCapture } = useScreenImages(area);
+  const { images, fetchCapture } = useScreenImages(viewport, screenSize);
 
-  useTouchZoom(containerRef, area, screenSize, onAreaChange);
+  useTouchZoom(containerRef, viewport, screenSize, onViewportChange);
 
   if (images.length === 0) {
     return (
@@ -29,13 +30,13 @@ export const Screen = ({ area, screenSize, onAreaChange }: ScreenProps) => {
       ref={containerRef}
       className="screen-Screen"
       onClick={() => fetchCapture()}
-      style={{ overflow: 'hidden', position: 'relative', width: '100vw', height: '100vh' }}
+      style={{ overflow: 'hidden', position: 'relative', width: '100vw', height: '100dvh' }}
     >
       {images.map((img, index) => {
-        const left = ((img.area.x - area.x) / area.w) * 100;
-        const top = ((img.area.y - area.y) / area.h) * 100;
-        const width = (img.area.w / area.w) * 100;
-        const height = (img.area.h / area.h) * 100;
+        const left = img.area.x * viewport.scale + viewport.u;
+        const top = img.area.y * viewport.scale + viewport.v;
+        const width = img.area.w * viewport.scale;
+        const height = img.area.h * viewport.scale;
 
         return (
           <img
@@ -45,10 +46,10 @@ export const Screen = ({ area, screenSize, onAreaChange }: ScreenProps) => {
             className="image"
             style={{
               position: 'absolute',
-              left: `${left}%`,
-              top: `${top}%`,
-              width: `${width}%`,
-              height: `${height}%`,
+              left: `${left}px`,
+              top: `${top}px`,
+              width: `${width}px`,
+              height: `${height}px`,
               pointerEvents: 'none',
               objectFit: 'fill',
             }}

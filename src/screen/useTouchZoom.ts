@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react';
-import type { Rect, ScreenSize } from '../types';
+import { useRef, useEffect } from 'react';
+import type { ViewportState } from './ViewportState';
+import type { ScreenSize } from './ScreenSize';
 
 export const useTouchZoom = (
     containerRef: React.RefObject<HTMLDivElement | null>,
-    area: Rect,
+    viewport: ViewportState,
     screenSize: ScreenSize,
-    onAreaChange: (area: Rect) => void
+    onViewportChange: (viewport: ViewportState) => void
 ) => {
     const lastTouchRef = useRef<{ d: number; x: number; y: number } | null>(null);
 
@@ -35,30 +36,19 @@ export const useTouchZoom = (
                 const y = (t1.clientY + t2.clientY) / 2;
 
                 const prev = lastTouchRef.current;
-                const scale = d / prev.d;
+                const factor = d / prev.d;
 
-                const viewportW = el.clientWidth;
-                const viewportH = el.clientHeight;
+                const newScale = viewport.scale * factor;
+                let newU = x - (x - viewport.u) * factor;
+                let newV = y - (y - viewport.v) * factor;
 
-                let newW = area.w / scale;
-                let newH = area.h / scale;
+                newU += (x - prev.x);
+                newV += (y - prev.y);
 
-                if (newW > screenSize.width) newW = screenSize.width;
-                if (newH > screenSize.height) newH = screenSize.height;
-                if (newW < 100) newW = 100;
-                if (newH < 100) newH = 100;
-
-                const P_x = area.x + (prev.x / viewportW) * area.w;
-                const P_y = area.y + (prev.y / viewportH) * area.h;
-
-                const newX = P_x - (x / viewportW) * newW;
-                const newY = P_y - (y / viewportH) * newH;
-
-                onAreaChange({
-                    x: Math.max(0, Math.min(newX, screenSize.width - newW)),
-                    y: Math.max(0, Math.min(newY, screenSize.height - newH)),
-                    w: newW,
-                    h: newH
+                onViewportChange({
+                    u: newU,
+                    v: newV,
+                    scale: newScale,
                 });
 
                 lastTouchRef.current = { d, x, y };
@@ -78,5 +68,5 @@ export const useTouchZoom = (
             el.removeEventListener('touchmove', handleTouchMove);
             el.removeEventListener('touchend', handleTouchEnd);
         };
-    }, [area, onAreaChange, screenSize, containerRef]);
+    }, [viewport, onViewportChange, screenSize, containerRef]);
 };

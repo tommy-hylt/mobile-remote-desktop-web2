@@ -2,7 +2,8 @@ import { useRef } from 'react';
 import type { ScreenSize } from './ScreenSize';
 import type { ViewportState } from './ViewportState';
 import { useScreenImages } from './useScreenImages';
-import { useTouchZoom } from './useTouchZoom';
+import { usePinchZoom } from './usePinchZoom';
+import { useDragPan } from './useDragPan';
 import { RefreshButton } from './RefreshButton';
 import { ZoomOutButton } from './ZoomOutButton';
 import './Screen.css';
@@ -17,7 +18,8 @@ export const Screen = ({ viewport, screenSize, onViewportChange }: ScreenProps) 
   const containerRef = useRef<HTMLDivElement>(null);
   const { images, fetchCapture } = useScreenImages(viewport, screenSize);
 
-  useTouchZoom(containerRef, viewport, screenSize, onViewportChange);
+  usePinchZoom(containerRef, viewport, onViewportChange);
+  useDragPan(containerRef, viewport, onViewportChange);
 
   const handleZoomOut = () => {
     const scaleW = window.innerWidth / screenSize.width;

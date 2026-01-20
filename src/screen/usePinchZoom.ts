@@ -1,11 +1,9 @@
 import { useRef, useEffect } from 'react';
 import type { ViewportState } from './ViewportState';
-import type { ScreenSize } from './ScreenSize';
 
-export const useTouchZoom = (
+export const usePinchZoom = (
     containerRef: React.RefObject<HTMLDivElement | null>,
     viewport: ViewportState,
-    screenSize: ScreenSize,
     onViewportChange: (viewport: ViewportState) => void
 ) => {
     const lastTouchRef = useRef<{ d: number; x: number; y: number } | null>(null);
@@ -55,8 +53,10 @@ export const useTouchZoom = (
             }
         };
 
-        const handleTouchEnd = () => {
-            lastTouchRef.current = null;
+        const handleTouchEnd = (e: TouchEvent) => {
+            if (e.touches.length < 2) {
+                lastTouchRef.current = null;
+            }
         };
 
         el.addEventListener('touchstart', handleTouchStart, { passive: false });
@@ -68,5 +68,5 @@ export const useTouchZoom = (
             el.removeEventListener('touchmove', handleTouchMove);
             el.removeEventListener('touchend', handleTouchEnd);
         };
-    }, [viewport, onViewportChange, screenSize, containerRef]);
+    }, [viewport, onViewportChange, containerRef]);
 };

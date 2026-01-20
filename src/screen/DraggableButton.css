@@ -1,6 +1,6 @@
 .screen-DraggableButton {
     position: absolute;
-    /* Top and Left set via inline styles */
+
     touch-action: none;
     width: 48px;
     height: 48px;

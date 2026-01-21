@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ScreenImage } from './ScreenImage';
 import type { Rect } from './Rect';
 import type { RequestItem, QueuingItem, FiringItem } from './RequestItem';
-import { fetchCapture } from './fetchCapture';
+import { useFetchCapture } from './useFetchCapture';
 
 export const useCaptureQueue = () => {
   const [items, setItems] = useState<RequestItem[]>([]);
   const [outputImage, setOutputImage] = useState<ScreenImage | null>(null);
   const latestHashRef = useRef<string | null>(null);
   const itemsRef = useRef<RequestItem[]>([]);
+  const fetchCapture = useFetchCapture();
 
   useEffect(() => {
     itemsRef.current = items;
@@ -57,7 +58,7 @@ export const useCaptureQueue = () => {
         // AbortError is ignored
       }
     },
-    [finish],
+    [finish, fetchCapture],
   );
 
   const fire = useCallback(

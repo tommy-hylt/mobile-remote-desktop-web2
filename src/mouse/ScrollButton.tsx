@@ -1,5 +1,7 @@
 import { useRef } from 'react';
+import { uuid } from '../socket/uuid';
 import './ScrollButton.css';
+import { useFetch } from '../socket/useFetch';
 
 interface ScrollButtonProps {
   x: number;
@@ -8,6 +10,7 @@ interface ScrollButtonProps {
 
 export const ScrollButton = ({ x, y }: ScrollButtonProps) => {
   const scrollStartRef = useRef<number | null>(null);
+  const fetch = useFetch();
 
   return (
     <div
@@ -25,10 +28,10 @@ export const ScrollButton = ({ x, y }: ScrollButtonProps) => {
         const dy = t.clientY - scrollStartRef.current;
 
         if (Math.abs(dy) > 10) {
-          fetch('/mouse/scroll', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ x: 0, y: Math.round(dy * -2) }),
+          fetch({
+            id: uuid(),
+            method: 'POST /mouse/scroll',
+            params: { x: 0, y: Math.round(dy * -2) },
           });
           scrollStartRef.current = t.clientY;
         }

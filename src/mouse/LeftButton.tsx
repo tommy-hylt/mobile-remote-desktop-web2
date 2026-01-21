@@ -1,4 +1,7 @@
 import './LeftButton.css';
+import { uuid } from '../socket/uuid';
+
+import { useFetch } from '../socket/useFetch';
 
 interface LeftButtonProps {
   x: number;
@@ -6,26 +9,30 @@ interface LeftButtonProps {
 }
 
 export const LeftButton = ({ x, y }: LeftButtonProps) => {
+  const fetch = useFetch();
+
   return (
     <div
       className="mouse-LeftButton"
-      style={{ left: `${x}px`, top: `${y}px` }}
+      style={{ left: x, top: y }}
       onPointerDown={(e) => {
-        console.log('LeftButton: onPointerDown');
-        e.preventDefault();
         e.stopPropagation();
-        fetch('/mouse/left/down', { method: 'POST' })
-          .then(() => console.log('LeftButton: down sent'))
-          .catch((err) => console.error('LeftButton: down failed', err));
+        fetch({
+          id: uuid(),
+          method: 'POST /mouse/left/down',
+          params: {},
+        });
       }}
       onPointerUp={(e) => {
-        console.log('LeftButton: onPointerUp');
-        e.preventDefault();
         e.stopPropagation();
-        fetch('/mouse/left/up', { method: 'POST' })
-          .then(() => console.log('LeftButton: up sent'))
-          .catch((err) => console.error('LeftButton: up failed', err));
+        fetch({
+          id: uuid(),
+          method: 'POST /mouse/left/up',
+          params: {},
+        });
       }}
-    />
+    >
+      L
+    </div>
   );
 };

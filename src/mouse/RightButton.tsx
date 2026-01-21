@@ -1,4 +1,6 @@
 import './RightButton.css';
+import { uuid } from '../socket/uuid';
+import { useFetch } from '../socket/useFetch';
 
 interface RightButtonProps {
   x: number;
@@ -6,26 +8,30 @@ interface RightButtonProps {
 }
 
 export const RightButton = ({ x, y }: RightButtonProps) => {
+  const fetch = useFetch();
+
   return (
     <div
       className="mouse-RightButton"
-      style={{ left: `${x}px`, top: `${y}px` }}
+      style={{ left: x, top: y }}
       onPointerDown={(e) => {
-        console.log('RightButton: onPointerDown');
-        e.preventDefault();
         e.stopPropagation();
-        fetch('/mouse/right/down', { method: 'POST' })
-          .then(() => console.log('RightButton: down sent'))
-          .catch((err) => console.error('RightButton: down failed', err));
+        fetch({
+          id: uuid(),
+          method: 'POST /mouse/right/down',
+          params: {},
+        });
       }}
       onPointerUp={(e) => {
-        console.log('RightButton: onPointerUp');
-        e.preventDefault();
         e.stopPropagation();
-        fetch('/mouse/right/up', { method: 'POST' })
-          .then(() => console.log('RightButton: up sent'))
-          .catch((err) => console.error('RightButton: up failed', err));
+        fetch({
+          id: uuid(),
+          method: 'POST /mouse/right/up',
+          params: {},
+        });
       }}
-    />
+    >
+      R
+    </div>
   );
 };

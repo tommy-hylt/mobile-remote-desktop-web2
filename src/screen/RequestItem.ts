@@ -12,10 +12,4 @@ export interface FiringItem {
     controller: AbortController;
 }
 
-export interface EndedItem {
-    status: 'ended';
-    time: number;
-    duration: number;
-}
-
-export type RequestItem = QueuingItem | FiringItem | EndedItem;
+export type RequestItem = QueuingItem | FiringItem;

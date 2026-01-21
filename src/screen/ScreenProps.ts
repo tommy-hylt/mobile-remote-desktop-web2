@@ -4,5 +4,5 @@ import type { ViewportState } from './ViewportState';
 export interface ScreenProps {
     viewport: ViewportState;
     screenSize: ScreenSize;
-    onViewportChange: (viewport: ViewportState) => void;
+    setViewport: (viewport: ViewportState) => void;
 }

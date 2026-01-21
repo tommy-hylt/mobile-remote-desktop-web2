@@ -1,6 +1,8 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
-import { useScreenImages } from './useScreenImages';
+import { useCaptureQueue } from './useCaptureQueue';
+import { useImageCache } from './useImageCache';
+import { useArea } from './useArea';
 import { usePinchZoom } from './usePinchZoom';
 import { useDragPan } from './useDragPan';
 import { RefreshButton } from './RefreshButton';
@@ -9,24 +11,31 @@ import './Screen.css';
 
 import type { ScreenProps } from './ScreenProps';
 
-export const Screen = ({ viewport, screenSize, onViewportChange }: ScreenProps) => {
+export const Screen = ({ viewport, screenSize, setViewport }: ScreenProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { images, fetchCapture, loading } = useScreenImages(viewport, screenSize);
+  const { enqueue, fire, outputImage, items } = useCaptureQueue();
+  const { images } = useImageCache(outputImage);
+  const area = useArea(viewport, screenSize);
 
-  usePinchZoom(containerRef, viewport, onViewportChange);
-  useDragPan(containerRef, viewport, onViewportChange);
+  useEffect(() => {
+    const tick = () => {
+      if (area.w > 0 && area.h > 0) {
+        enqueue(area);
+      }
+    };
 
-  const handleZoomOut = () => {
-    const scaleW = window.innerWidth / screenSize.width;
-    const scaleH = window.innerHeight / screenSize.height;
-    const scale = Math.min(scaleW, scaleH);
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, [area, enqueue]);
 
-    onViewportChange({
-      u: (window.innerWidth - screenSize.width * scale) / 2,
-      v: 0,
-      scale,
-    });
-  };
+  const loading = items.filter(i => i.status === 'firing').length;
+
+
+
+  usePinchZoom(containerRef, viewport, setViewport);
+  useDragPan(containerRef, viewport, setViewport);
+
+
 
   return (
     <div ref={containerRef} className="screen-Screen">
@@ -61,8 +70,8 @@ export const Screen = ({ viewport, screenSize, onViewportChange }: ScreenProps) 
         />
       ))}
 
-      <RefreshButton onClick={() => fetchCapture()} loading={loading} />
-      <ZoomOutButton onClick={handleZoomOut} />
+      <RefreshButton fire={fire} area={area} loading={loading} />
+      <ZoomOutButton screenSize={screenSize} setViewport={setViewport} />
     </div>
   );
 };

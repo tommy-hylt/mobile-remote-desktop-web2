@@ -4,7 +4,7 @@ import type { ViewportState } from './ViewportState';
 export const usePinchZoom = (
     containerRef: React.RefObject<HTMLDivElement | null>,
     viewport: ViewportState,
-    onViewportChange: (viewport: ViewportState) => void
+    setViewport: (viewport: ViewportState) => void
 ) => {
     const lastTouchRef = useRef<{ d: number; x: number; y: number } | null>(null);
 
@@ -43,7 +43,7 @@ export const usePinchZoom = (
                 const newU = uAfterScale + (x - prev.x);
                 const newV = vAfterScale + (y - prev.y);
 
-                onViewportChange({
+                setViewport({
                     u: newU,
                     v: newV,
                     scale: newScale,
@@ -68,5 +68,5 @@ export const usePinchZoom = (
             el.removeEventListener('touchmove', handleTouchMove);
             el.removeEventListener('touchend', handleTouchEnd);
         };
-    }, [viewport, onViewportChange, containerRef]);
+    }, [viewport, setViewport, containerRef]);
 };

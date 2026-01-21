@@ -1,4 +1,6 @@
+import type { Rect } from './Rect';
 export interface RefreshButtonProps {
-    onClick: () => void;
-    loading?: number;
+    fire: (area: Rect) => void;
+    area: Rect;
+    loading: number;
 }

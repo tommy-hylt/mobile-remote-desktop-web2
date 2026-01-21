@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ScreenImage } from './ScreenImage';
 import type { Rect } from './Rect';
-import type { RequestItem, QueuingItem, FiringItem, EndedItem } from './RequestItem';
+import type { RequestItem, QueuingItem, FiringItem } from './RequestItem';
 
-export const useCaptureManager = (onImage: (img: ScreenImage) => void) => {
+export const useCaptureQueue = () => {
     const [items, setItems] = useState<RequestItem[]>([]);
+    const [outputImage, setOutputImage] = useState<ScreenImage | null>(null);
     const latestHashRef = useRef<string | null>(null);
     const itemsRef = useRef<RequestItem[]>([]);
 
@@ -13,8 +14,8 @@ export const useCaptureManager = (onImage: (img: ScreenImage) => void) => {
         itemsRef.current = items;
     }, [items]);
 
-    const finish = useCallback((item: FiringItem, duration: number) => {
-        setItems(prev => prev.map(i => i === item ? { status: 'ended', time: item.time, duration } as EndedItem : i));
+    const finish = useCallback((item: FiringItem) => {
+        setItems(prev => prev.filter(i => i !== item));
     }, []);
 
     const execute = useCallback(async (item: FiringItem, area: Rect) => {
@@ -28,24 +29,42 @@ export const useCaptureManager = (onImage: (img: ScreenImage) => void) => {
             const headers: Record<string, string> = {};
             if (latestHashRef.current) headers['Last-Hash'] = latestHashRef.current;
             const res = await fetch(`/capture?area=${x},${y},${w},${h}`, { headers, signal: item.controller.signal });
-            const duration = Date.now() - item.time;
+
 
             if (res.status === 204 || !res.ok) {
-                finish(item, duration);
+                finish(item);
                 return;
             }
 
             const hash = res.headers.get('Next-Hash');
+            const dateStr = res.headers.get('Date');
+            const time = dateStr ? Date.parse(dateStr) : Date.now();
+
             const blob = await res.blob();
             latestHashRef.current = hash;
-            onImage({ url: URL.createObjectURL(blob), area, hash });
-            finish(item, duration);
+
+            // Clean up OTHER firing items (dump them)
+            setItems(prev => {
+                const keep = prev.filter(i => i === item || i.status !== 'firing');
+                // Abort the dropped ones? captureManager logic says we should abort them.
+                // The item passed to execute is 'item'. We want to keep it (will be updated to ended by finish).
+                // Others that are firing should be aborted and removed.
+                prev.forEach(i => {
+                    if (i !== item && i.status === 'firing') {
+                        i.controller.abort();
+                    }
+                });
+                return keep;
+            });
+
+            setOutputImage({ url: URL.createObjectURL(blob), area, hash, time });
+            finish(item);
         } catch (e) {
             if (e instanceof Error && e.name !== 'AbortError') {
-                finish(item, 3000);
+                finish(item);
             }
         }
-    }, [onImage, finish]);
+    }, [finish]);
 
     const fire = useCallback((area: Rect) => {
         const now = Date.now();
@@ -72,38 +91,32 @@ export const useCaptureManager = (onImage: (img: ScreenImage) => void) => {
             const now = Date.now();
             const currentItems = itemsRef.current;
 
-
-            const validItems = currentItems.filter(i => i.status !== 'ended' || (now - i.time < 10000));
-            const cleanupNeeded = validItems.length !== currentItems.length;
-
-            const processedItems = validItems.map(item => {
-                if (item.status === 'firing' && now - item.time > 30000) {
+            // Remove items that have timed out
+            const validItems = currentItems.filter(i => {
+                if (i.status === 'firing' && now - i.time > 30000) {
                     console.warn('captureManager: Aborting stale request');
-                    item.controller.abort();
-                    return { status: 'ended', time: item.time, duration: 30000 } as EndedItem;
+                    i.controller.abort();
+                    return false;
                 }
-                return item;
+                return true;
             });
 
-            const lastFire = processedItems.reduce((max, i) =>
-                (i.status === 'firing' || i.status === 'ended') ? Math.max(max, i.time) : max, 0);
+            const cleanupNeeded = validItems.length !== currentItems.length;
 
-            const recent = processedItems.filter(i => i.status === 'ended').slice(-5) as EndedItem[];
-            const avg = recent.length ? recent.reduce((s, i) => s + i.duration, 0) / recent.length : 1000;
-            const interval = Math.min(Math.max(avg / 2, 0), 5000);
+            const queuing = validItems.find(i => i.status === 'queuing') as QueuingItem | undefined;
+            const firingCount = validItems.filter(i => i.status === 'firing').length;
 
-            const queuing = processedItems.find(i => i.status === 'queuing') as QueuingItem | undefined;
-            const firingCount = processedItems.filter(i => i.status === 'firing').length;
-
-            if (queuing && now - lastFire > interval && firingCount < 3) {
+            // Simple rule: Only fire if nothing else is firing
+            if (queuing && firingCount === 0) {
                 console.log('captureManager: firing new request');
                 const firing: FiringItem = { status: 'firing', time: now, controller: new AbortController() };
-                const newItems = processedItems.map(i => i === queuing ? firing : i);
+                // Replace the queuing item with the new firing item
+                const newItems = validItems.map(i => i === queuing ? firing : i);
 
                 setItems(newItems);
                 execute(firing, queuing.area);
-            } else if (cleanupNeeded || processedItems !== validItems) {
-                setItems(processedItems);
+            } else if (cleanupNeeded) {
+                setItems(validItems);
             }
         };
 
@@ -111,5 +124,5 @@ export const useCaptureManager = (onImage: (img: ScreenImage) => void) => {
         return () => clearInterval(timer);
     }, [execute]);
 
-    return { items, enqueue, fire };
+    return { items, enqueue, fire, outputImage };
 };

@@ -1,7 +1,4 @@
 import './LeftButton.css';
-import { uuid } from '../socket/uuid';
-
-import { useFetch } from '../socket/useFetch';
 
 interface LeftButtonProps {
   x: number;
@@ -9,30 +6,18 @@ interface LeftButtonProps {
 }
 
 export const LeftButton = ({ x, y }: LeftButtonProps) => {
-  const fetch = useFetch();
-
   return (
     <div
       className="mouse-LeftButton"
       style={{ left: x, top: y }}
       onPointerDown={(e) => {
         e.stopPropagation();
-        fetch({
-          id: uuid(),
-          method: 'POST /mouse/left/down',
-          params: {},
-        });
+        fetch('/mouse/left/down', { method: 'POST' });
       }}
       onPointerUp={(e) => {
         e.stopPropagation();
-        fetch({
-          id: uuid(),
-          method: 'POST /mouse/left/up',
-          params: {},
-        });
+        fetch('/mouse/left/up', { method: 'POST' });
       }}
-    >
-      L
-    </div>
+    ></div>
   );
 };

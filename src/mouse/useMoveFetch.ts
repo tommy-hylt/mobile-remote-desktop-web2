@@ -1,9 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
-import { useFetch } from '../socket/useFetch';
-import { uuid } from '../socket/uuid';
 
 export const useMoveFetch = (cursorPos: { x: number; y: number }) => {
-  const fetch = useFetch();
   const lastFetchTimeRef = useRef<number>(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestPosRef = useRef(cursorPos);
@@ -12,17 +9,14 @@ export const useMoveFetch = (cursorPos: { x: number; y: number }) => {
     latestPosRef.current = cursorPos;
   }, [cursorPos]);
 
-  const sendMove = useCallback(
-    (pos: { x: number; y: number }) => {
-      fetch({
-        id: uuid(),
-        method: 'POST /mouse/move',
-        params: { x: Math.round(pos.x), y: Math.round(pos.y) },
-      });
-      lastFetchTimeRef.current = Date.now();
-    },
-    [fetch],
-  );
+  const sendMove = useCallback((pos: { x: number; y: number }) => {
+    fetch('/mouse/move', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ x: Math.round(pos.x), y: Math.round(pos.y) }),
+    });
+    lastFetchTimeRef.current = Date.now();
+  }, []);
 
   useEffect(() => {
     const now = Date.now();

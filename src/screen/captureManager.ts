@@ -43,10 +43,14 @@ export const captureManager = (onImage: (img: ScreenImage) => void) => {
     const tick = () => {
         const now = Date.now();
 
+        // Cleanup old ended items to prevent memory leak
+        items = items.filter(i => i.status !== 'ended' || (now - i.time < 10000));
+
         items = items.map(item => {
-            if (item.status === 'firing' && now - item.time > 180000) {
+            if (item.status === 'firing' && now - item.time > 30000) {
+                console.warn('captureManager: Aborting stale request');
                 item.controller.abort();
-                return { status: 'ended', time: item.time, duration: 180000 } as EndedItem;
+                return { status: 'ended', time: item.time, duration: 30000 } as EndedItem;
             }
             return item;
         });
@@ -55,13 +59,19 @@ export const captureManager = (onImage: (img: ScreenImage) => void) => {
             (i.status === 'firing' || i.status === 'ended') ? Math.max(max, i.time) : max, 0);
 
         const recent = items.filter(i => i.status === 'ended').slice(-5) as EndedItem[];
-        const avg = recent.length ? recent.reduce((s, i) => s + i.duration, 0) / recent.length : 4000;
-        const interval = Math.min(Math.max(avg / 2, 0), 30000);
+        const avg = recent.length ? recent.reduce((s, i) => s + i.duration, 0) / recent.length : 1000;
+        const interval = Math.min(Math.max(avg / 2, 0), 5000);
 
         const queuing = items.find(i => i.status === 'queuing') as QueuingItem | undefined;
         const firingCount = items.filter(i => i.status === 'firing').length;
 
+        // Debug log every 5 seconds or if halted
+        if (Math.random() < 0.05) {
+            console.log(`captureManager: queuing=${queuing ? 1 : 0} firing=${firingCount} interval=${interval.toFixed(0)} items=${items.length}`);
+        }
+
         if (queuing && now - lastFire > interval && firingCount < 4) {
+            console.log('captureManager: firing new request');
             const firing: FiringItem = { status: 'firing', time: now, controller: new AbortController() };
             items = items.map(i => i === queuing ? firing : i);
             execute(firing, queuing.area);

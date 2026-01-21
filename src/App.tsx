@@ -3,7 +3,7 @@ import './App.css';
 import { Screen } from './screen/Screen';
 import type { ViewportState } from './screen/ViewportState';
 import type { ScreenSize } from './screen/ScreenSize';
-import { Mouse } from './mouse/Mouse';
+// import { Mouse } from './mouse/Mouse';
 
 function App() {
   const [screenSize, setScreenSize] = useState<ScreenSize | null>(null);
@@ -37,7 +37,7 @@ function App() {
       {viewport && screenSize ? (
         <>
           <Screen viewport={viewport} screenSize={screenSize} onViewportChange={setViewport} />
-          <Mouse viewport={viewport} />
+          {/* <Mouse viewport={viewport} /> */}
         </>
       ) : (
         <div className="loading">Connecting to remote desktop...</div>

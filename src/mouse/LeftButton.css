@@ -8,6 +8,7 @@
     pointer-events: auto;
     touch-action: none;
     animation: flyOutLeft 0.2s ease-out forwards;
+    z-index: 1000;
 }
 
 .mouse-LeftButton:active {

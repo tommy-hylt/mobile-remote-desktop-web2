@@ -1,19 +1,71 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import type { ViewportState } from '../screen/ViewportState';
 import './Cursor.css';
 
 interface CursorProps {
     x: number;
     y: number;
+    cursorPos: { x: number, y: number };
     viewport: ViewportState;
     setIsActive: React.Dispatch<React.SetStateAction<boolean>>;
     setCursorPos: React.Dispatch<React.SetStateAction<{ x: number, y: number }>>;
 }
 
 export const Cursor = ({
-    x, y, viewport, setIsActive, setCursorPos
+    x, y, cursorPos, viewport, setIsActive, setCursorPos
 }: CursorProps) => {
     const lastPosRef = useRef<{ x: number, y: number } | null>(null);
+    const lastFetchTimeRef = useRef<number>(0);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const latestPosRef = useRef(cursorPos); // Track latest position for timeout
+
+    // Sync latest position for the timeout callback to access
+    useEffect(() => {
+        latestPosRef.current = cursorPos;
+    }, [cursorPos]);
+
+    const sendMove = (pos: { x: number; y: number }) => {
+        fetch('/mouse/move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ x: Math.round(pos.x), y: Math.round(pos.y) }),
+        });
+        lastFetchTimeRef.current = Date.now();
+    };
+
+    // Throttling logic using useEffect
+    useEffect(() => {
+        const now = Date.now();
+        const timeSinceLast = now - lastFetchTimeRef.current;
+
+        if (timeSinceLast >= 1000) {
+            // If enough time passed, send immediately and clear any pending timeout
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+            sendMove(cursorPos);
+        } else if (!timeoutRef.current) {
+            // Schedule a trailing send if not already scheduled
+            const delay = 1000 - timeSinceLast;
+            timeoutRef.current = setTimeout(() => {
+                sendMove(latestPosRef.current);
+                timeoutRef.current = null;
+            }, delay);
+        }
+        // No cleanup function to clear timeout here because we want the trailing edge to fire
+        // even if the component unmounts? No, unmount should probably cancel.
+        // But for rapid moves, we want the effect to just schedule.
+        // Actually, if dependencies change, this runs again.
+        // If timeout exists, we do nothing (let it run).
+    }, [cursorPos]);
+
+    // Ensure cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, []);
 
     return (
         <div
@@ -44,13 +96,6 @@ export const Cursor = ({
                 setCursorPos(prev => {
                     const nextX = Math.max(0, prev.x + remoteDx);
                     const nextY = Math.max(0, prev.y + remoteDy);
-
-                    fetch('/mouse/move', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ x: Math.round(nextX), y: Math.round(nextY) }),
-                    });
-
                     return { x: nextX, y: nextY };
                 });
 
@@ -58,6 +103,12 @@ export const Cursor = ({
             }}
             onTouchEnd={(e) => {
                 e.stopPropagation();
+                // Flush pending move on release
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                    timeoutRef.current = null;
+                    sendMove(latestPosRef.current);
+                }
                 lastPosRef.current = null;
             }}
         />

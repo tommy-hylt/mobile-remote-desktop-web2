@@ -10,8 +10,22 @@ export const RightButton = ({ x, y }: RightButtonProps) => {
         <div
             className="mouse-RightButton"
             style={{ left: `${x}px`, top: `${y}px` }}
-            onPointerDown={() => fetch('/mouse/right/down', { method: 'POST' })}
-            onPointerUp={() => fetch('/mouse/right/up', { method: 'POST' })}
+            onPointerDown={(e) => {
+                console.log('RightButton: onPointerDown');
+                e.preventDefault();
+                e.stopPropagation();
+                fetch('/mouse/right/down', { method: 'POST' })
+                    .then(() => console.log('RightButton: down sent'))
+                    .catch(err => console.error('RightButton: down failed', err));
+            }}
+            onPointerUp={(e) => {
+                console.log('RightButton: onPointerUp');
+                e.preventDefault();
+                e.stopPropagation();
+                fetch('/mouse/right/up', { method: 'POST' })
+                    .then(() => console.log('RightButton: up sent'))
+                    .catch(err => console.error('RightButton: up failed', err));
+            }}
         />
     );
 };

@@ -12,11 +12,11 @@ export default defineConfig({
         target: 'http://localhost:6485',
         changeOrigin: true,
       },
-      '/screen-size': 'http://localhost:6485',
-      '/mouse': 'http://localhost:6485',
-      '/key': 'http://localhost:6485',
-      '/clipboard': 'http://localhost:6485',
-      '/shutdown': 'http://localhost:6485',
+      '/screen-size': { target: 'http://localhost:6485', changeOrigin: true },
+      '/mouse': { target: 'http://localhost:6485', changeOrigin: true },
+      '/key': { target: 'http://localhost:6485', changeOrigin: true },
+      '/clipboard': { target: 'http://localhost:6485', changeOrigin: true },
+      '/shutdown': { target: 'http://localhost:6485', changeOrigin: true },
     }
   }
 })

@@ -25,6 +25,7 @@ export const Mouse = ({ viewport }: MouseProps) => {
             <Cursor
                 x={x}
                 y={y}
+                cursorPos={cursorPos}
                 viewport={viewport}
                 setIsActive={setIsActive}
                 setCursorPos={setCursorPos}

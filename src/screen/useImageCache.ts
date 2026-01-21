@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useReducer, useEffect } from 'react';
 import type { ScreenImage } from './ScreenImage';
 import type { Rect } from './Rect';
 
@@ -13,25 +13,26 @@ const getCoverageRatio = (subject: Rect, covering: Rect): number => {
   return subjectArea > 0 ? intersectionArea / subjectArea : 0;
 };
 
+const imageReducer = (state: ScreenImage[], image: ScreenImage) => {
+  const oldImages = state.filter(
+    (i) => getCoverageRatio(i.area, image.area) < 1,
+  );
+  const sortedImages = [...oldImages].sort(
+    (a, b) =>
+      getCoverageRatio(a.area, image.area) -
+      getCoverageRatio(b.area, image.area),
+  );
+  const keptImages = oldImages.filter((c) => sortedImages.indexOf(c) < 2);
+  return [...keptImages, image];
+};
+
 export const useImageCache = (outputImage: ScreenImage | null) => {
-  const [images, setImages] = useState<ScreenImage[]>([]);
+  const [images, dispatch] = useReducer(imageReducer, []);
 
   useEffect(() => {
-    if (!outputImage) return;
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setImages((prev) => {
-      const oldImages = prev.filter(
-        (i) => getCoverageRatio(i.area, outputImage.area) < 1,
-      );
-      const sortedImages = [...oldImages].sort(
-        (a, b) =>
-          getCoverageRatio(a.area, outputImage.area) -
-          getCoverageRatio(b.area, outputImage.area),
-      );
-      const keptImages = oldImages.filter((c) => sortedImages.indexOf(c) < 2);
-      return [...keptImages, outputImage];
-    });
+    if (outputImage) {
+      dispatch(outputImage);
+    }
   }, [outputImage]);
 
   return { images };

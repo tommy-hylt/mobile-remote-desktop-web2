@@ -6,9 +6,9 @@ import type { RequestItem, QueuingItem, FiringItem, EndedItem } from './RequestI
 export const useCaptureManager = (onImage: (img: ScreenImage) => void) => {
     const [items, setItems] = useState<RequestItem[]>([]);
     const latestHashRef = useRef<string | null>(null);
-    const itemsRef = useRef<RequestItem[]>([]); // Ref to access latest items in async/interval
+    const itemsRef = useRef<RequestItem[]>([]);
 
-    // Sync ref with state
+
     useEffect(() => {
         itemsRef.current = items;
     }, [items]);
@@ -52,7 +52,6 @@ export const useCaptureManager = (onImage: (img: ScreenImage) => void) => {
         const firing: FiringItem = { status: 'firing', time: now, controller: new AbortController() };
 
         setItems(prev => {
-            // Remove any queuing items to avoid double fire if user manually refreshes
             const others = prev.filter(i => i.status !== 'queuing');
             return [...others, firing];
         });
@@ -67,17 +66,17 @@ export const useCaptureManager = (onImage: (img: ScreenImage) => void) => {
         });
     }, []);
 
-    // Tick logic
+
     useEffect(() => {
         const tick = () => {
             const now = Date.now();
-            const currentItems = itemsRef.current; // Use ref to get latest without dependency loop
+            const currentItems = itemsRef.current;
 
-            // Cleanup old
+
             const validItems = currentItems.filter(i => i.status !== 'ended' || (now - i.time < 10000));
             const cleanupNeeded = validItems.length !== currentItems.length;
 
-            let nextItems = validItems.map(item => {
+            const processedItems = validItems.map(item => {
                 if (item.status === 'firing' && now - item.time > 30000) {
                     console.warn('captureManager: Aborting stale request');
                     item.controller.abort();
@@ -86,36 +85,31 @@ export const useCaptureManager = (onImage: (img: ScreenImage) => void) => {
                 return item;
             });
 
-            const lastFire = nextItems.reduce((max, i) =>
+            const lastFire = processedItems.reduce((max, i) =>
                 (i.status === 'firing' || i.status === 'ended') ? Math.max(max, i.time) : max, 0);
 
-            const recent = nextItems.filter(i => i.status === 'ended').slice(-5) as EndedItem[];
+            const recent = processedItems.filter(i => i.status === 'ended').slice(-5) as EndedItem[];
             const avg = recent.length ? recent.reduce((s, i) => s + i.duration, 0) / recent.length : 1000;
             const interval = Math.min(Math.max(avg / 2, 0), 5000);
 
-            const queuing = nextItems.find(i => i.status === 'queuing') as QueuingItem | undefined;
-            const firingCount = nextItems.filter(i => i.status === 'firing').length;
+            const queuing = processedItems.find(i => i.status === 'queuing') as QueuingItem | undefined;
+            const firingCount = processedItems.filter(i => i.status === 'firing').length;
 
             if (queuing && now - lastFire > interval && firingCount < 3) {
                 console.log('captureManager: firing new request');
                 const firing: FiringItem = { status: 'firing', time: now, controller: new AbortController() };
-                nextItems = nextItems.map(i => i === queuing ? firing : i);
+                const newItems = processedItems.map(i => i === queuing ? firing : i);
 
-                // Update state and execute
-                setItems(nextItems);
+                setItems(newItems);
                 execute(firing, queuing.area);
-            } else if (cleanupNeeded || nextItems !== validItems) {
-                // Update state if we cleaned up or aborted
-                // Note: we can't easily detect "nextItems !== validItems" equality for objects, 
-                // but strict equality works if map returned new objects.
-                // Actually map always returns new array.
-                setItems(nextItems);
+            } else if (cleanupNeeded || processedItems !== validItems) {
+                setItems(processedItems);
             }
         };
 
         const timer = setInterval(tick, 200);
         return () => clearInterval(timer);
-    }, [execute]); // Dependencies? execute depends on onImage/finish which are stable-ish.
+    }, [execute]);
 
     return { items, enqueue, fire };
 };

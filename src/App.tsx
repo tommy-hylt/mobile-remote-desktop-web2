@@ -4,7 +4,7 @@ import { Screen } from './screen/Screen';
 import type { ViewportState } from './screen/ViewportState';
 import type { ScreenSize } from './screen/ScreenSize';
 import { Mouse } from './mouse/Mouse';
-import { useWakeLock } from './useWakeLock';
+import { useWakeLock } from './screen/useWakeLock';
 
 function App() {
   const [screenSize, setScreenSize] = useState<ScreenSize | null>(null);

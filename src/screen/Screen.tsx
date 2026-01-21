@@ -1,6 +1,5 @@
 import { useRef } from 'react';
-import type { ScreenSize } from './ScreenSize';
-import type { ViewportState } from './ViewportState';
+
 import { useScreenImages } from './useScreenImages';
 import { usePinchZoom } from './usePinchZoom';
 import { useDragPan } from './useDragPan';
@@ -8,11 +7,7 @@ import { RefreshButton } from './RefreshButton';
 import { ZoomOutButton } from './ZoomOutButton';
 import './Screen.css';
 
-interface ScreenProps {
-  viewport: ViewportState;
-  screenSize: ScreenSize;
-  onViewportChange: (viewport: ViewportState) => void;
-}
+import type { ScreenProps } from './ScreenProps';
 
 export const Screen = ({ viewport, screenSize, onViewportChange }: ScreenProps) => {
   const containerRef = useRef<HTMLDivElement>(null);

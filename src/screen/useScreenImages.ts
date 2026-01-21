@@ -20,7 +20,7 @@ export const useScreenImages = (viewport: ViewportState, screenSize: ScreenSize)
 
     const { enqueue, fire, items } = useCaptureManager(handleImage);
 
-    // Count firing or queuing items
+
     const loading = items.filter(i => i.status === 'firing').length;
 
     const calcArea = useCallback(() => {

@@ -2,10 +2,7 @@ import { MdRefresh } from 'react-icons/md';
 import { DraggableButton } from './DraggableButton';
 import './RefreshButton.css';
 
-interface RefreshButtonProps {
-    onClick: () => void;
-    loading?: number;
-}
+import type { RefreshButtonProps } from './RefreshButtonProps';
 
 export const RefreshButton = ({ onClick, loading }: RefreshButtonProps) => (
     <DraggableButton className={`screen-RefreshButton ${loading && loading > 0 ? 'loading' : ''}`} onClick={onClick} initialX={window.innerWidth - 64} initialY={16}>

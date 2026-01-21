@@ -21,7 +21,7 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-    /* Left Dot - Red */
+
     .dot.left {
         background-color: #ff5f5f;
         left: 10px;
@@ -29,7 +29,7 @@
         transform: translateY(-50%);
     }
 
-    /* Right Dot - Blue */
+
     .dot.right {
         background-color: #5f5fff;
         right: 10px;
@@ -37,7 +37,7 @@
         transform: translateY(-50%);
     }
 
-    /* Middle Dot - Green */
+
     .dot.middle {
         background-color: #5fff5f;
         top: 10px;

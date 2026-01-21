@@ -4,7 +4,7 @@
     touch-action: none;
     pointer-events: auto;
 
-    /* Merged .cursor-visual styles */
+
     width: 32px;
     height: 32px;
     background-color: rgba(255, 255, 255, 0.4);
@@ -12,7 +12,7 @@
     border-radius: 50%;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 
-    /* Center transform handles the alignment */
+
     transform: translate(-50%, -50%);
     transition: width 0.2s, height 0.2s, background-color 0.2s;
     display: flex;
@@ -26,7 +26,7 @@
         border: 2px solid rgba(255, 255, 255, 0.5);
     }
 
-    /* Center (Close) - Tappable Area */
+
     .center-close {
         position: absolute;
         width: 100%;

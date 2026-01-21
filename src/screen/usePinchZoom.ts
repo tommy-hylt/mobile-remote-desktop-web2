@@ -37,11 +37,11 @@ export const usePinchZoom = (
                 const factor = d / prev.d;
 
                 const newScale = viewport.scale * factor;
-                let newU = x - (x - viewport.u) * factor;
-                let newV = y - (y - viewport.v) * factor;
+                const uAfterScale = x - (x - viewport.u) * factor;
+                const vAfterScale = y - (y - viewport.v) * factor;
 
-                newU += (x - prev.x);
-                newV += (y - prev.y);
+                const newU = uAfterScale + (x - prev.x);
+                const newV = vAfterScale + (y - prev.y);
 
                 onViewportChange({
                     u: newU,

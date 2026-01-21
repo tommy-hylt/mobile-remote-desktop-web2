@@ -1,9 +1,6 @@
 import './RightButton.css';
 
-interface RightButtonProps {
-    x: number;
-    y: number;
-}
+import type { RightButtonProps } from './RightButtonProps';
 
 export const RightButton = ({ x, y }: RightButtonProps) => {
     return (

@@ -1,14 +1,11 @@
 import { useState, useRef } from 'react';
 
-interface Position {
-    x: number;
-    y: number;
-}
+import type { Point } from './Point';
 
-export const useDraggable = (initialPosition: Position) => {
+export const useDraggable = (initialPosition: Point) => {
     const [position, setPosition] = useState(initialPosition);
     const isDragging = useRef(false);
-    const dragStartPos = useRef<Position | null>(null);
+    const dragStartPos = useRef<Point | null>(null);
 
     const handlePointerDown = (e: React.PointerEvent) => {
         isDragging.current = false;

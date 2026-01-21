@@ -1,9 +1,6 @@
 import './LeftButton.css';
 
-interface LeftButtonProps {
-    x: number;
-    y: number;
-}
+import type { LeftButtonProps } from './LeftButtonProps';
 
 export const LeftButton = ({ x, y }: LeftButtonProps) => {
     return (
@@ -13,7 +10,7 @@ export const LeftButton = ({ x, y }: LeftButtonProps) => {
             onPointerDown={(e) => {
                 console.log('LeftButton: onPointerDown');
                 e.preventDefault();
-                e.stopPropagation(); // Stop event from bubbling to parent elements
+                e.stopPropagation();
                 fetch('/mouse/left/down', { method: 'POST' })
                     .then(() => console.log('LeftButton: down sent'))
                     .catch(err => console.error('LeftButton: down failed', err));

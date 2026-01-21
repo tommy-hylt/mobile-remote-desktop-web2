@@ -1,10 +1,7 @@
 import { useRef } from 'react';
 import './ScrollButton.css';
 
-interface ScrollButtonProps {
-    x: number;
-    y: number;
-}
+import type { ScrollButtonProps } from './ScrollButtonProps';
 
 export const ScrollButton = ({ x, y }: ScrollButtonProps) => {
     const scrollStartRef = useRef<number | null>(null);

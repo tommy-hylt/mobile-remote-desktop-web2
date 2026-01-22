@@ -6,24 +6,20 @@ export const useKeySender = () => {
       .filter((k) => k.length > 0);
   };
 
-  const sendDown = async (keyString: string) => {
+  const send = async (keyString: string, action: 'down' | 'up') => {
     const keys = parseKeys(keyString);
+    if (action === 'up') keys.reverse();
+
     try {
       for (const key of keys) {
-        await fetch(`/key/${encodeURIComponent(key)}`, {
+        await fetch(`/key/${encodeURIComponent(key)}/${action}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: '{}',
         });
       }
     } catch (e) {
-      console.error('Failed to send key', e);
+      console.error(`Failed to send key ${action}`, e);
     }
   };
 
-  const sendUp = async () => {
-    // no-op
-  };
-
-  return { sendDown, sendUp };
+  return { send };
 };

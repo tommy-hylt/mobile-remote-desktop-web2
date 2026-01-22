@@ -4,9 +4,10 @@ import './KeyMenu.css';
 import { useKeySender } from './useKeySender';
 
 export const KeyMenu = () => {
-  const [keys, setKeys] = useState('CTRL + C');
+  const [text, setText] = useState('CTRL + C');
   const [history, setHistory] = useState<string[]>([]);
-  const { sendDown, sendUp } = useKeySender();
+  const [isPressing, setIsPressing] = useState(false);
+  const { send } = useKeySender();
 
   const addToHistory = (k: string) => {
     setHistory((prev) => {
@@ -16,12 +17,14 @@ export const KeyMenu = () => {
   };
 
   const handleDown = () => {
-    sendDown(keys);
-    addToHistory(keys);
+    setIsPressing(true);
+    send(text, 'down');
+    addToHistory(text);
   };
 
   const handleUp = () => {
-    sendUp();
+    setIsPressing(false);
+    send(text, 'up');
   };
 
   return (
@@ -33,7 +36,7 @@ export const KeyMenu = () => {
               <div
                 key={item}
                 className="history-item"
-                onClick={() => setKeys(item)}
+                onClick={() => !isPressing && setText(item)}
               >
                 {item}
               </div>
@@ -44,9 +47,10 @@ export const KeyMenu = () => {
 
       <div className="input-row">
         <input
-          value={keys}
-          onChange={(e) => setKeys(e.target.value)}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
           placeholder="e.g. CTRL + C"
+          disabled={isPressing}
         />
         <button
           className="key-trigger"

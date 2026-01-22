@@ -24,54 +24,44 @@
   .input-row {
     display: flex;
     gap: 8px;
-    align-items: stretch; /* Stretch children height */
-    height: 48px; /* Fixed height for row to stretch inputs against? Or let padding constrain? */
-    /* Let's set a reasonable height or let content define it? 
-       Previous button was 40px. 
-    */
+    align-items: stretch;
+    height: 48px;
 
     input {
       flex: 1;
       background: transparent;
-      border: none; /* User didn't say remove border, but "transparent" usually implies clean look. */
-      /* Or keep border? "make the input transparent" -> background. 
-         Let's keep border minimal or remove? 
-         If I remove border, it's just text floating. 
-         Let's try removing border for clean "RefreshMenu" look.
-      */
+      border: none;
       border-radius: 4px;
       color: white;
-      padding: 0 8px; /* Remove vertical padding if aligning stretch? */
+      padding: 0 8px;
       font-family: inherit;
-      font-size: 16px; /* Slightly larger? */
+      font-size: 16px;
 
       &:focus {
         outline: none;
-        /* border-color: #ff5fcf; removed border basically */
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
     }
   }
 
   .key-trigger {
     width: 40px;
-    /* height: 40px; handled by stretch? or keep fixed width, auto height? */
     height: auto;
     border-radius: 8px;
-    background: transparent; /* Remove background */
+    background: transparent;
     border: none;
-    color: #faeb92; /* Yellow icon */
+    color: #faeb92;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
 
     &:active {
-      background: rgba(
-        255,
-        255,
-        255,
-        0.1
-      ); /* Subtle feedback instead of solid color */
+      background: rgba(255, 255, 255, 0.1);
     }
   }
 

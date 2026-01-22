@@ -7,7 +7,7 @@
   backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 8px;
-  min-width: 300px; /* Keep width for textarea availability */
+  min-width: 300px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   color: #faeb92;
   font-family:
@@ -18,16 +18,16 @@
   z-index: 1000;
   display: flex;
   gap: 8px;
-  align-items: flex-start; /* Align top for multiline text area */
+  align-items: flex-start;
 
   animation: text-TextMenu-fadeIn 0.1s ease-out;
 
   textarea {
     flex: 1;
-    height: 60px; /* Keep height for multiline */
+    height: 60px;
     background: transparent;
     color: white;
-    border: none; /* Clean look */
+    border: none;
     border-radius: 8px;
     padding: 8px;
     font-family: monospace;
@@ -46,7 +46,7 @@
   button {
     width: 48px;
     height: auto;
-    align-self: stretch; /* Stretch to match textarea */
+    align-self: stretch;
     border: none;
     background-color: transparent;
     color: #faeb92;

@@ -1,11 +1,11 @@
-import { useState, useCallback, useRef } from 'react';
-import type { ScreenImage } from './ScreenImage';
+import { useCallback, useRef, useState } from 'react';
 import type { Rect } from './Rect';
-import type { RequestItem, FiringItem } from './RequestItem';
+import type { FiringItem, RequestItem } from './RequestItem';
+import type { ScreenImage } from './ScreenImage';
 import { useFetchCapture } from './useFetchCapture';
 import { useQueueScheduler } from './useQueueScheduler';
 
-export const useCaptureQueue = () => {
+export const useCaptureQueue = (quality: number) => {
   const [items, setItems] = useState<RequestItem[]>([]);
   const [outputImage, setOutputImage] = useState<ScreenImage | null>(null);
   const latestHashRef = useRef<string | null>(null);
@@ -29,6 +29,7 @@ export const useCaptureQueue = () => {
           item.controller.signal,
           latestHashRef.current,
           item.scale,
+          quality,
         );
 
         if (!result) {
@@ -36,7 +37,7 @@ export const useCaptureQueue = () => {
           return;
         }
 
-        const { url, hash, time } = result;
+        const { url, hash, time, duration } = result;
         latestHashRef.current = hash;
 
         setItems((prev) => {
@@ -49,11 +50,13 @@ export const useCaptureQueue = () => {
           return keep;
         });
 
-        setOutputImage({ url, area, hash, time });
+        setOutputImage({ url, area, hash, time, duration });
         finish(item);
-      } catch {}
+      } catch {
+        // ignore
+      }
     },
-    [finish, fetchCapture],
+    [finish, fetchCapture, quality],
   );
 
   const fire = useCallback(

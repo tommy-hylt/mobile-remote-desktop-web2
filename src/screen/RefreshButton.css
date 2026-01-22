@@ -1,19 +1,22 @@
 .screen-RefreshButton {
-  .icon {
+  color: #faeb92;
+
+  svg {
     width: 24px;
     height: 24px;
-    color: #faeb92;
   }
 
-  .count {
+  span {
     font-size: 14px;
     font-weight: bold;
-    color: #faeb92;
   }
 }
 
-.screen-RefreshButton.loading {
+.screen-RefreshButton .loading {
   animation: spin 1s linear infinite;
+  display: flex; /* Ensure it behaves like a container if needed, though block might be fine. Flex centers usually. */
+  justify-content: center;
+  align-items: center;
 }
 
 @keyframes spin {

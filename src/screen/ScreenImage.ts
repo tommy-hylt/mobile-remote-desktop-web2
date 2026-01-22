@@ -5,4 +5,5 @@ export interface ScreenImage {
   area: Rect;
   hash: string | null;
   time: number;
+  duration: number;
 }

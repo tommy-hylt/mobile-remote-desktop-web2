@@ -1,15 +1,15 @@
-import { useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { useCaptureQueue } from './useCaptureQueue';
-import { useImageCache } from './useImageCache';
-import { useArea } from './useArea';
-import { usePinchZoom } from './usePinchZoom';
-import { useDragPan } from './useDragPan';
 import { RefreshButton } from './RefreshButton';
-import { ZoomOutButton } from './ZoomOutButton';
 import './Screen.css';
 import type { ScreenSize } from './ScreenSize';
+import { useArea } from './useArea';
+import { useCaptureQueue } from './useCaptureQueue';
+import { useDragPan } from './useDragPan';
+import { useImageCache } from './useImageCache';
+import { usePinchZoom } from './usePinchZoom';
 import type { ViewportState } from './ViewportState';
+import { ZoomOutButton } from './ZoomOutButton';
 
 export interface ScreenProps {
   viewport: ViewportState;
@@ -19,9 +19,26 @@ export interface ScreenProps {
 
 export const Screen = ({ viewport, screenSize, setViewport }: ScreenProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { enqueue, fire, outputImage, items } = useCaptureQueue();
+
+  const [quality, setQuality] = useState(90);
+  const [auto, setAuto] = useState(true);
+
+  const { enqueue, fire, outputImage, items } = useCaptureQueue(quality);
   const { images } = useImageCache(outputImage);
   const area = useArea(viewport, screenSize);
+
+  // Auto-quality logic
+  useEffect(() => {
+    if (!auto || !outputImage) return;
+    const { duration } = outputImage;
+    if (duration < 100) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQuality((prev) => Math.min(100, prev + 10));
+    } else if (duration > 5000) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQuality((prev) => Math.max(20, prev - 10));
+    }
+  }, [auto, outputImage]);
 
   useEffect(() => {
     const tick = () => {
@@ -74,6 +91,10 @@ export const Screen = ({ viewport, screenSize, setViewport }: ScreenProps) => {
         fire={() => fire(area, viewport.scale)}
         area={area}
         loading={loading}
+        quality={quality}
+        setQuality={setQuality}
+        auto={auto}
+        setAuto={setAuto}
       />
       <ZoomOutButton screenSize={screenSize} setViewport={setViewport} />
     </div>

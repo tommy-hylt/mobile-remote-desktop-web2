@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 export const useWakeLock = () => {
   const wakeLock = useRef<WakeLockSentinel | null>(null);
@@ -7,7 +7,7 @@ export const useWakeLock = () => {
     if ('wakeLock' in navigator) {
       try {
         wakeLock.current = await navigator.wakeLock.request('screen');
-        console.log('Wake Lock is active');
+        // removed log
       } catch (err) {
         if (err instanceof Error) {
           console.error(`${err.name}, ${err.message}`);
@@ -20,7 +20,7 @@ export const useWakeLock = () => {
     if (wakeLock.current) {
       await wakeLock.current.release();
       wakeLock.current = null;
-      console.log('Wake Lock released');
+      // removed log
     }
   }, []);
 

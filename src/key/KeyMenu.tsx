@@ -3,9 +3,19 @@ import { MdPlayArrow } from 'react-icons/md';
 import './KeyMenu.css';
 import { useKeySender } from './useKeySender';
 
-export const KeyMenu = () => {
-  const [text, setText] = useState('CTRL + C');
-  const [history, setHistory] = useState<string[]>([]);
+interface KeyMenuProps {
+  text: string;
+  setText: (text: string) => void;
+  history: string[];
+  setHistory: (val: string[] | ((prev: string[]) => string[])) => void;
+}
+
+export const KeyMenu = ({
+  text,
+  setText,
+  history,
+  setHistory,
+}: KeyMenuProps) => {
   const [isPressing, setIsPressing] = useState(false);
   const { send } = useKeySender();
 
